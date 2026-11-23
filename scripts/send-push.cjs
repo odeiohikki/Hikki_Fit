@@ -31,9 +31,8 @@ async function main() {
     try {
       await admin.messaging().send({
         token:s.token,
-        notification:{title:"Hikki Fit 💜",body:"🐱 Miau! Hora de treinar! Seu treino está esperando por você."},
-        webpush:{notification:{icon:"https://odeiohikki.github.io/Hikki_Fit/icon.svg",badge:"https://odeiohikki.github.io/Hikki_Fit/icon.svg"},
-          fcmOptions:{link:"https://odeiohikki.github.io/Hikki_Fit/"}}
+        data:{title:"Hikki Fit 💜",body:"🐱 Miau! Hora de treinar! Seu treino está esperando por você."},
+        webpush:{headers:{TTL:"3600"}}
       });
       await lock.update({status:"sent",sentAt:admin.firestore.FieldValue.serverTimestamp()});
       console.log("Push enviado:",doc.id,key);
