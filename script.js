@@ -1,37 +1,51 @@
 
 "use strict";
 
-const STORAGE_KEY = "hikki_fit_exercises_v1";
+// =====================================
+// HIKKI FIT 0.4
+// =====================================
+
+const EXERCISE_KEY = "hikki_fit_exercises_v1";
+const WORKOUT_KEY = "hikki_fit_workouts_v1";
 const THEME_KEY = "hikki_fit_theme";
 
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-let exercises = loadExercises();
-let editingId = null;
+const WEEK_DAYS = [
+  "Domingo", "Segunda", "Terça", "Quarta",
+  "Quinta", "Sexta", "Sábado"
+];
+
+const SHORT_DAYS = [
+  "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"
+];
+
+let editingExerciseId = null;
+let editingWorkoutId = null;
 let toastTimer;
 
-function loadExercises() {
+function loadArray(key) {
   try {
-    const saved = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || "[]"
+    const data = JSON.parse(
+      localStorage.getItem(key) || "[]"
     );
-    return Array.isArray(saved) ? saved : [];
+    return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Erro ao carregar exercícios:", error);
+    console.error("Erro ao carregar:", key, error);
     return [];
   }
 }
 
-function saveExercises() {
+let exercises = loadArray(EXERCISE_KEY);
+let workouts = loadArray(WORKOUT_KEY);
+
+function saveArray(key, data) {
   try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(exercises)
-    );
+    localStorage.setItem(key, JSON.stringify(data));
     return true;
   } catch (error) {
-    console.error("Erro ao salvar exercícios:", error);
-    showToast("Não foi possível salvar no dispositivo.");
+    console.error("Erro ao salvar:", error);
+    showToast("Não foi possível salvar os dados.");
     return false;
   }
 }
@@ -47,7 +61,17 @@ function showToast(message) {
   }, 3000);
 }
 
-// Navegação
+function textElement(tag, text, className = "") {
+  const element = document.createElement(tag);
+  element.textContent = text;
+  if (className) element.className = className;
+  return element;
+}
+
+// =====================================
+// NAVEGAÇÃO
+// =====================================
+
 document.querySelectorAll(".nav-btn").forEach(button => {
   button.addEventListener("click", () => {
     const page = button.dataset.page;
@@ -63,22 +87,39 @@ document.querySelectorAll(".nav-btn").forEach(button => {
       nav.classList.toggle("active", nav === button);
     });
 
+    if (page === "home") renderTodayWorkout();
+    if (page === "routine") {
+      renderWeek();
+      renderWorkouts();
+    }
+
     window.scrollTo(0, 0);
   });
 });
 
-// Tema
+// =====================================
+// TEMA
+// =====================================
+
+let currentTheme;
+
+try {
+  currentTheme = localStorage.getItem(THEME_KEY);
+} catch (error) {
+  currentTheme = "dark";
+}
+
+if (currentTheme !== "light") currentTheme = "dark";
+
 function applyTheme(theme) {
   document.body.classList.toggle(
     "light",
     theme === "light"
   );
+
   $("themeBtn").textContent =
     theme === "light" ? "☾" : "☀";
 }
-
-let currentTheme = localStorage.getItem(THEME_KEY);
-if (currentTheme !== "light") currentTheme = "dark";
 
 applyTheme(currentTheme);
 
@@ -95,9 +136,12 @@ $("themeBtn").addEventListener("click", () => {
   }
 });
 
-// Formulário
-const dialog = $("exerciseDialog");
-const form = $("exerciseForm");
+// =====================================
+// CADASTRO DE EXERCÍCIOS
+// =====================================
+
+const exerciseDialog = $("exerciseDialog");
+const exerciseForm = $("exerciseForm");
 
 function updateTypeFields() {
   const isTime = $("exerciseType").value === "time";
@@ -115,9 +159,8 @@ $("exerciseType").addEventListener(
 );
 
 function openExerciseForm(exercise = null) {
-  form.reset();
-
-  editingId = exercise ? exercise.id : null;
+  exerciseForm.reset();
+  editingExerciseId = exercise ? exercise.id : null;
 
   $("formTitle").textContent = exercise
     ? "Editar exercício"
@@ -135,7 +178,7 @@ function openExerciseForm(exercise = null) {
   }
 
   updateTypeFields();
-  dialog.showModal();
+  exerciseDialog.showModal();
 }
 
 $("addExerciseBtn").addEventListener("click", () => {
@@ -143,16 +186,16 @@ $("addExerciseBtn").addEventListener("click", () => {
 });
 
 $("closeDialog").addEventListener("click", () => {
-  dialog.close();
+  exerciseDialog.close();
 });
 
-dialog.addEventListener("click", (event) => {
-  if (event.target === dialog) {
-    dialog.close();
+exerciseDialog.addEventListener("click", event => {
+  if (event.target === exerciseDialog) {
+    exerciseDialog.close();
   }
 });
 
-form.addEventListener("submit", (event) => {
+exerciseForm.addEventListener("submit", event => {
   event.preventDefault();
 
   const name = $("exerciseName").value.trim();
@@ -179,7 +222,7 @@ form.addEventListener("submit", (event) => {
   }
 
   const exercise = {
-    id: editingId || crypto.randomUUID(),
+    id: editingExerciseId || crypto.randomUUID(),
     name,
     sets,
     type,
@@ -190,38 +233,32 @@ form.addEventListener("submit", (event) => {
 
   const previous = exercises;
 
-  if (editingId) {
+  if (editingExerciseId) {
     exercises = exercises.map(item =>
-      item.id === editingId ? exercise : item
+      item.id === editingExerciseId ? exercise : item
     );
   } else {
     exercises = [...exercises, exercise];
   }
 
-  if (!saveExercises()) {
+  if (!saveArray(EXERCISE_KEY, exercises)) {
     exercises = previous;
     return;
   }
 
-  dialog.close();
+  exerciseDialog.close();
   renderExercises();
+  renderWorkouts();
+  renderTodayWorkout();
 
   showToast(
-    editingId
+    editingExerciseId
       ? "Exercício atualizado! 💜"
       : "Exercício criado! 💜"
   );
 
-  editingId = null;
+  editingExerciseId = null;
 });
-
-// Criar elementos de texto com segurança
-function textElement(tag, text, className = "") {
-  const element = document.createElement(tag);
-  element.textContent = text;
-  if (className) element.className = className;
-  return element;
-}
 
 function renderExercises() {
   const list = $("exerciseList");
@@ -231,11 +268,8 @@ function renderExercises() {
     `${exercises.length} exercício(s) cadastrado(s)`;
 
   if (exercises.length === 0) {
-    const empty = textElement(
-      "div",
-      "",
-      "empty-state"
-    );
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
 
     empty.append(
       textElement("div", "🐱", "emoji"),
@@ -281,7 +315,7 @@ function renderExercises() {
       "✏️ Editar",
       "secondary-btn"
     );
-    editBtn.type = "button";
+
     editBtn.addEventListener("click", () => {
       openExerciseForm(exercise);
     });
@@ -291,26 +325,48 @@ function renderExercises() {
       "🗑 Excluir",
       "danger-btn"
     );
-    deleteBtn.type = "button";
 
     deleteBtn.addEventListener("click", () => {
-      const confirmed = confirm(
+      if (!confirm(
         `Excluir o exercício "${exercise.name}"?`
-      );
+      )) return;
 
-      if (!confirmed) return;
+      const previousExercises = exercises;
+      const previousWorkouts = workouts;
 
-      const previous = exercises;
       exercises = exercises.filter(
         item => item.id !== exercise.id
       );
 
-      if (!saveExercises()) {
-        exercises = previous;
+      workouts = workouts.map(workout => ({
+        ...workout,
+        exerciseIds: workout.exerciseIds.filter(
+          id => id !== exercise.id
+        )
+      }));
+
+      // Salva as duas coleções.
+      // Se uma falhar, tenta restaurar ambas.
+      const savedExercises = saveArray(
+        EXERCISE_KEY, exercises
+      );
+
+      const savedWorkouts = savedExercises &&
+        saveArray(WORKOUT_KEY, workouts);
+
+      if (!savedExercises || !savedWorkouts) {
+        exercises = previousExercises;
+        workouts = previousWorkouts;
+
+        saveArray(EXERCISE_KEY, exercises);
+        saveArray(WORKOUT_KEY, workouts);
         return;
       }
 
       renderExercises();
+      renderWorkouts();
+      renderWeek();
+      renderTodayWorkout();
       showToast("Exercício excluído.");
     });
 
@@ -320,10 +376,323 @@ function renderExercises() {
   });
 }
 
+// =====================================
+// ROTINA SEMANAL
+// =====================================
+
+const workoutDialog = $("workoutDialog");
+const workoutForm = $("workoutForm");
+
+function openWorkoutForm(workout = null) {
+  if (exercises.length === 0) {
+    showToast("Cadastre um exercício primeiro!");
+    return;
+  }
+
+  workoutForm.reset();
+  editingWorkoutId = workout ? workout.id : null;
+
+  $("workoutFormTitle").textContent = workout
+    ? "Editar treino"
+    : "Criar treino";
+
+  $("workoutName").value = workout?.name || "";
+
+  document.querySelectorAll(
+    "#workoutDays input"
+  ).forEach(input => {
+    input.checked = workout
+      ? workout.days.includes(Number(input.value))
+      : false;
+  });
+
+  const options = $("workoutExerciseOptions");
+  options.replaceChildren();
+
+  exercises.forEach(exercise => {
+    const label = document.createElement("label");
+    label.className = "workout-option";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = exercise.id;
+
+    checkbox.checked = workout
+      ? workout.exerciseIds.includes(exercise.id)
+      : false;
+
+    const name = document.createElement("span");
+    name.textContent = exercise.name;
+
+    label.append(checkbox, name);
+    options.append(label);
+  });
+
+  workoutDialog.showModal();
+}
+
+$("addWorkoutBtn").addEventListener("click", () => {
+  openWorkoutForm();
+});
+
+$("closeWorkoutDialog").addEventListener(
+  "click",
+  () => workoutDialog.close()
+);
+
+workoutDialog.addEventListener("click", event => {
+  if (event.target === workoutDialog) {
+    workoutDialog.close();
+  }
+});
+
+workoutForm.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const name = $("workoutName").value.trim();
+
+  const days = [...document.querySelectorAll(
+    "#workoutDays input:checked"
+  )].map(input => Number(input.value));
+
+  const exerciseIds = [...document.querySelectorAll(
+    "#workoutExerciseOptions input:checked"
+  )].map(input => input.value);
+
+  if (!name) {
+    showToast("Digite o nome do treino.");
+    return;
+  }
+
+  if (days.length === 0) {
+    showToast("Selecione pelo menos um dia.");
+    return;
+  }
+
+  if (exerciseIds.length === 0) {
+    showToast("Selecione pelo menos um exercício.");
+    return;
+  }
+
+  const workout = {
+    id: editingWorkoutId || crypto.randomUUID(),
+    name,
+    days,
+    exerciseIds
+  };
+
+  const previous = workouts;
+
+  if (editingWorkoutId) {
+    workouts = workouts.map(item =>
+      item.id === editingWorkoutId ? workout : item
+    );
+  } else {
+    workouts = [...workouts, workout];
+  }
+
+  if (!saveArray(WORKOUT_KEY, workouts)) {
+    workouts = previous;
+    return;
+  }
+
+  workoutDialog.close();
+  renderWorkouts();
+  renderWeek();
+  renderTodayWorkout();
+
+  showToast(
+    editingWorkoutId
+      ? "Treino atualizado! 💜"
+      : "Treino criado! 💜"
+  );
+
+  editingWorkoutId = null;
+});
+
+function renderWorkouts() {
+  const list = $("workoutList");
+  list.replaceChildren();
+
+  if (workouts.length === 0) {
+    list.append(
+      textElement(
+        "div",
+        "🐱 Nenhum treino cadastrado ainda.",
+        "empty-state"
+      )
+    );
+    return;
+  }
+
+  workouts.forEach(workout => {
+    const card = document.createElement("article");
+    card.className = "exercise-card";
+
+    card.append(
+      textElement("h3", workout.name)
+    );
+
+    const dayNames = workout.days
+      .map(day => SHORT_DAYS[day])
+      .join(", ");
+
+    card.append(
+      textElement(
+        "p",
+        `📅 ${dayNames}`,
+        "workout-days-label"
+      )
+    );
+
+    workout.exerciseIds.forEach(id => {
+      const exercise = exercises.find(
+        item => item.id === id
+      );
+
+      card.append(
+        textElement(
+          "div",
+          exercise
+            ? `• ${exercise.name}`
+            : "• Exercício removido",
+          "workout-exercise-item"
+        )
+      );
+    });
+
+    const actions = document.createElement("div");
+    actions.className = "exercise-actions";
+
+    const editBtn = textElement(
+      "button",
+      "✏️ Editar",
+      "secondary-btn"
+    );
+
+    editBtn.addEventListener("click", () => {
+      openWorkoutForm(workout);
+    });
+
+    const deleteBtn = textElement(
+      "button",
+      "🗑 Excluir",
+      "danger-btn"
+    );
+
+    deleteBtn.addEventListener("click", () => {
+      if (!confirm(
+        `Excluir "${workout.name}"?`
+      )) return;
+
+      const previous = workouts;
+
+      workouts = workouts.filter(
+        item => item.id !== workout.id
+      );
+
+      if (!saveArray(WORKOUT_KEY, workouts)) {
+        workouts = previous;
+        return;
+      }
+
+      renderWorkouts();
+      renderWeek();
+      renderTodayWorkout();
+      showToast("Treino excluído.");
+    });
+
+    actions.append(editBtn, deleteBtn);
+    card.append(actions);
+    list.append(card);
+  });
+}
+
+function renderWeek() {
+  const container = $("weekOverview");
+  container.replaceChildren();
+
+  const today = new Date().getDay();
+
+  WEEK_DAYS.forEach((day, index) => {
+    const dayWorkouts = workouts.filter(
+      workout => workout.days.includes(index)
+    );
+
+    const box = document.createElement("div");
+    box.className = "week-day";
+
+    if (dayWorkouts.length > 0) {
+      box.classList.add("has-workout");
+    }
+
+    if (index === today) {
+      box.classList.add("today");
+    }
+
+    box.append(
+      textElement("strong", SHORT_DAYS[index]),
+      textElement(
+        "span",
+        dayWorkouts.length > 0
+          ? String(dayWorkouts.length)
+          : "–"
+      )
+    );
+
+    box.title = dayWorkouts.length
+      ? `${day}: ${dayWorkouts.map(w => w.name).join(", ")}`
+      : `${day}: nenhum treino`;
+
+    container.append(box);
+  });
+}
+
+function renderTodayWorkout() {
+  const today = new Date().getDay();
+
+  const todayWorkouts = workouts.filter(
+    workout => workout.days.includes(today)
+  );
+
+  if (todayWorkouts.length === 0) {
+    $("todayWorkoutTitle").textContent =
+      "Hoje é dia de descansar? 🌙";
+
+    $("todayWorkoutDescription").textContent =
+      "Nenhum treino foi planejado para hoje.";
+    return;
+  }
+
+  $("todayWorkoutTitle").textContent =
+    todayWorkouts.map(w => w.name).join(" + ");
+
+  const total = todayWorkouts.reduce(
+    (sum, workout) =>
+      sum + workout.exerciseIds.length,
+    0
+  );
+
+  $("todayWorkoutDescription").textContent =
+    `${todayWorkouts.length} treino(s) planejado(s) • ` +
+    `${total} exercício(s) na rotina de hoje.`;
+}
+
+// =====================================
+// BOTÃO INICIAR TREINO
+// =====================================
+
 $("startBtn").addEventListener("click", () => {
   showToast(
     "Em breve você poderá iniciar seus treinos! 💜"
   );
 });
 
+// =====================================
+// INICIALIZAÇÃO
+// =====================================
+
 renderExercises();
+renderWorkouts();
+renderWeek();
+renderTodayWorkout();
