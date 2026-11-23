@@ -4,33 +4,169 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#2563eb">
-
-  <title>Hikki Fit 💙</title>
-
+  <meta name="theme-color" content="#151020">
+  <title>Hikki Fit 💜</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-
-  <main class="app">
-    <header>
-      <p class="subtitle">BEM-VINDO AO</p>
-      <h1>Hikki Fit 💙</h1>
-      <p>Seu treino, seu ritmo.</p>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">☾</div>
+        <div>
+          <span class="eyebrow">SEU TREINO, SEU RITMO</span>
+          <h1>Hikki Fit 💜</h1>
+        </div>
+      </div>
+      <button id="themeBtn" class="icon-btn"
+        aria-label="Alternar tema">☀</button>
     </header>
 
-    <section class="card">
-      <h2>Treino de hoje</h2>
-      <p>Seu próximo treino aparecerá aqui.</p>
-      <button id="startBtn">Começar treino</button>
-    </section>
+    <main>
+      <section id="home" class="page active">
+        <p class="muted">Bem-vindo de volta!</p>
+        <h2>Um passo de cada vez ✨</h2>
 
-    <section class="card">
-      <h2>Minha evolução</h2>
-      <p>Seus treinos e conquistas aparecerão aqui.</p>
-    </section>
-  </main>
+        <div class="card">
+          <span class="eyebrow">TREINO DE HOJE</span>
+          <h3>Pronto para se movimentar?</h3>
+          <p class="muted">
+            Quando você organizar sua rotina,
+            seu treino do dia aparecerá aqui.
+          </p>
+          <button class="primary-btn" id="startBtn">
+            ▶ Iniciar treino
+          </button>
+        </div>
 
+        <h3 class="section-title">Minha evolução</h3>
+        <div class="stats">
+          <div class="card">
+            <span>🏋️</span>
+            <h2>0</h2>
+            <p class="muted">Treinos concluídos</p>
+          </div>
+          <div class="card">
+            <span>⭐</span>
+            <h2>Nível 1</h2>
+            <p class="muted">0 XP conquistado</p>
+          </div>
+        </div>
+        <p class="muted small">
+          As estatísticas serão atualizadas
+          quando o registro de treinos estiver disponível.
+        </p>
+      </section>
+
+      <section id="exercises" class="page">
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">MINHA BIBLIOTECA</span>
+            <h2>Exercícios 💪</h2>
+          </div>
+        </div>
+        <p class="muted">
+          Cadastre os exercícios que deseja realizar.
+        </p>
+        <button id="addExerciseBtn" class="primary-btn">
+          + Novo exercício
+        </button>
+        <p id="exerciseCount" class="muted small"></p>
+        <div id="exerciseList" class="exercise-list"></div>
+      </section>
+
+      <section id="routine" class="page">
+        <span class="eyebrow">ORGANIZAÇÃO</span>
+        <h2>Minha rotina 📅</h2>
+        <div class="card">
+          <h3>Sua semana, seu ritmo</h3>
+          <p class="muted">
+            Em breve você poderá montar treinos e
+            organizar os exercícios por dia da semana.
+          </p>
+        </div>
+      </section>
+
+      <section id="profile" class="page">
+        <span class="eyebrow">MINHA JORNADA</span>
+        <h2>Meu perfil 🐱</h2>
+        <div class="card profile-card">
+          <div class="avatar">🐱</div>
+          <h3>Hikki Fit</h3>
+          <p class="muted">Nível 1 • 0 XP</p>
+          <div class="xp-bar"><div></div></div>
+          <p class="muted small">
+            Seu progresso aparecerá aqui.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navegação principal">
+      <button class="nav-btn active" data-page="home">
+        <span>⌂</span>Início
+      </button>
+      <button class="nav-btn" data-page="exercises">
+        <span>♢</span>Exercícios
+      </button>
+      <button class="nav-btn" data-page="routine">
+        <span>▦</span>Rotina
+      </button>
+      <button class="nav-btn" data-page="profile">
+        <span>◎</span>Perfil
+      </button>
+    </nav>
+  </div>
+
+  <dialog id="exerciseDialog">
+    <form id="exerciseForm">
+      <div class="dialog-header">
+        <h2 id="formTitle">Novo exercício</h2>
+        <button type="button" id="closeDialog"
+          class="close-btn" aria-label="Fechar">✕</button>
+      </div>
+
+      <label for="exerciseName">Nome do exercício</label>
+      <input id="exerciseName" type="text"
+        placeholder="Ex: Agachamento" maxlength="80" required>
+
+      <label for="exerciseSets">Quantidade de séries</label>
+      <input id="exerciseSets" type="number"
+        min="1" max="100" value="2" required>
+
+      <label for="exerciseType">Tipo de exercício</label>
+      <select id="exerciseType">
+        <option value="reps">Repetições</option>
+        <option value="time">Tempo</option>
+      </select>
+
+      <div id="repsField">
+        <label for="exerciseReps">Repetições por série</label>
+        <input id="exerciseReps" type="number"
+          min="1" max="10000" value="10">
+      </div>
+
+      <div id="timeField" hidden>
+        <label for="exerciseDuration">Segundos por série</label>
+        <input id="exerciseDuration" type="number"
+          min="1" max="86400" value="60">
+      </div>
+
+      <label for="exerciseDescription">
+        Como executar o exercício
+      </label>
+      <textarea id="exerciseDescription" rows="4"
+        maxlength="2000"
+        placeholder="Descreva o movimento..."></textarea>
+
+      <button type="submit" class="primary-btn">
+        Salvar exercício
+      </button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"
+    aria-live="polite"></div>
 </body>
 </html>
