@@ -1679,3 +1679,196 @@ renderHome();
 renderHistory();
 renderReminderSettings();
 checkReminder();
+
+/* ==========================================
+   HIKKI FIT v0.7
+   SISTEMA DE XP, NÍVEIS E EVOLUÇÃO
+========================================== */
+
+// Cada treino concluído vale 50 XP.
+// Cada exercício concluído vale mais 10 XP.
+
+function calcularXpTreino(treino) {
+  const quantidadeExercicios = Array.isArray(treino.exercises)
+    ? treino.exercises.length
+    : 0;
+
+  return 50 + quantidadeExercicios * 10;
+}
+
+// Calcula o XP usando o histórico de treinos.
+// Assim, os treinos antigos também contam!
+
+function calcularXpTotal() {
+  return history.reduce((total, treino) => {
+    return total + calcularXpTreino(treino);
+  }, 0);
+}
+
+// Cada nível exige mais XP:
+// Nível 1 -> 2: 100 XP
+// Nível 2 -> 3: 200 XP
+// Nível 3 -> 4: 300 XP
+
+function calcularNivel() {
+  const xpTotal = calcularXpTotal();
+
+  let nivel = 1;
+  let xpRestante = xpTotal;
+
+  while (xpRestante >= nivel * 100) {
+    xpRestante -= nivel * 100;
+    nivel++;
+  }
+
+  const xpNecessario = nivel * 100;
+
+  const porcentagem = Math.round(
+    (xpRestante / xpNecessario) * 100
+  );
+
+  return {
+    nivel,
+    xpTotal,
+    xpRestante,
+    xpNecessario,
+    porcentagem
+  };
+}
+
+// Atualiza a área do perfil.
+
+function atualizarPerfilXp() {
+  const progresso = calcularNivel();
+
+  const perfil = document.querySelector(".profile-card");
+
+  if (!perfil) return;
+
+  // Atualiza o texto do nível.
+
+  const subtitulo = perfil.querySelector(".muted");
+
+  if (subtitulo) {
+    subtitulo.textContent =
+      `Nível ${progresso.nivel} • ` +
+      `${progresso.xpTotal} XP total`;
+  }
+
+  // Atualiza a barra roxa.
+
+  const barra = perfil.querySelector(".xp-bar div");
+
+  if (barra) {
+    barra.style.width = `${progresso.porcentagem}%`;
+  }
+
+  // Cria os detalhes de XP.
+
+  let detalhes = document.getElementById("xpDetails");
+
+  if (!detalhes) {
+    detalhes = document.createElement("div");
+    detalhes.id = "xpDetails";
+    detalhes.style.marginTop = "16px";
+
+    perfil.appendChild(detalhes);
+  }
+
+  detalhes.replaceChildren();
+
+  const textoXp = document.createElement("p");
+  textoXp.className = "muted small";
+
+  textoXp.textContent =
+    `${progresso.xpRestante} / ` +
+    `${progresso.xpNecessario} XP`;
+
+  const faltam = document.createElement("p");
+  faltam.className = "muted small";
+
+  const quantidadeFaltante =
+    progresso.xpNecessario - progresso.xpRestante;
+
+  faltam.textContent =
+    `⭐ Faltam ${quantidadeFaltante} XP ` +
+    `para o nível ${progresso.nivel + 1}`;
+
+  detalhes.append(textoXp, faltam);
+}
+
+// Adiciona XP ao histórico visual.
+
+function mostrarXpNoHistorico() {
+  const lista = document.getElementById("historyList");
+
+  if (!lista) return;
+
+  const cartoes = lista.querySelectorAll(".exercise-card");
+
+  const treinosOrdenados = [...history].reverse();
+
+  cartoes.forEach((cartao, indice) => {
+    const treino = treinosOrdenados[indice];
+
+    if (!treino) return;
+
+    let textoXp = cartao.querySelector(".history-xp");
+
+    if (!textoXp) {
+      textoXp = document.createElement("p");
+
+      textoXp.className =
+        "history-xp workout-days-label";
+
+      cartao.appendChild(textoXp);
+    }
+
+    textoXp.textContent =
+      `⭐ +${calcularXpTreino(treino)} XP`;
+  });
+}
+
+// Preserva as funções anteriores e adiciona XP.
+
+const renderStatsAnterior = renderStats;
+
+renderStats = function () {
+  renderStatsAnterior();
+  atualizarPerfilXp();
+};
+
+const renderHistoryAnterior = renderHistory;
+
+renderHistory = function () {
+  renderHistoryAnterior();
+  mostrarXpNoHistorico();
+};
+
+// Atualiza o perfil após concluir um treino.
+
+const finishWorkoutAnterior = finishWorkout;
+
+finishWorkout = function () {
+  if (!session) return;
+
+  const quantidadeExercicios = session.items.length;
+
+  const treinoCompleto =
+    session.completed.length === quantidadeExercicios;
+
+  finishWorkoutAnterior();
+
+  if (treinoCompleto && !session) {
+    const xpGanho = 50 + quantidadeExercicios * 10;
+
+    atualizarPerfilXp();
+
+    toast(`Treino concluído! +${xpGanho} XP ⭐`);
+  }
+};
+
+// Inicializa a nova funcionalidade.
+
+atualizarPerfilXp();
+mostrarXpNoHistorico();
