@@ -17,4 +17,4 @@ jobs:
       - run: npm install --no-save firebase-admin@13.6.0 luxon@3.7.2
       - run: node scripts/send-push.cjs
         env:
-          FIREBASE_SERVICE_ACCOUNT: \${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
