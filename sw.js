@@ -1,5 +1,5 @@
 "use strict";
-const CACHE="hikki-fit-v1-1-0";
+const CACHE="hikki-fit-v1-1-1";
 const ASSETS=["./","./index.html","./style.css","./script.js","./media.js","./final.js","./push.js","./manifest.webmanifest","./icon.svg"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
@@ -25,7 +25,7 @@ self.addEventListener("fetch",event=>{
 self.addEventListener("push", event => {
   let data={};
   try {data=event.data ? event.data.json() : {};}catch{}
-  const notification=data.notification || {};
+  const notification=data.notification || data.data || {};
   const title=notification.title || "Hikki Fit 💜";
   const body=notification.body || "🐱 Miau! Hora de treinar!";
   event.waitUntil(self.registration.showNotification(title,{
