@@ -14,9 +14,18 @@ function valid(s) {
 }
 async function main() {
   const snapshot=await db.collection("pushSubscriptions").where("enabled","==",true).get();
+  console.log("Assinaturas push habilitadas:",snapshot.size,"modo teste:",process.env.PUSH_TEST==="true");
   for(const doc of snapshot.docs) {
     const s=doc.data();
     if(!valid(s)) continue;
+    const testMode=process.env.PUSH_TEST==="true";
+    if(testMode){
+      try {
+        const id=await admin.messaging().send({token:s.token,data:{title:"Hikki Fit 💜",body:"🐱 Teste push: chegou com o aplicativo fechado!"},webpush:{headers:{TTL:"3600"}}});
+        console.log("Teste push enviado ao Firebase:",doc.id,id);
+      }catch(e){console.error("Falha no teste push:",doc.id,e.code||e.message);process.exitCode=1;}
+      continue;
+    }
     let local;
     try {local=now.setZone(s.timezone);if(!local.isValid)continue;}catch{continue;}
     const day=local.weekday%7;
