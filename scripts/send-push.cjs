@@ -17,7 +17,7 @@ async function main() {
   console.log("Assinaturas push habilitadas:",snapshot.size,"modo teste:",process.env.PUSH_TEST==="true");
   for(const doc of snapshot.docs) {
     const s=doc.data();
-    if(!valid(s)) continue;
+    if(!valid(s)) {console.log("Assinatura invalida ignorada:",doc.id);continue;}
     const testMode=process.env.PUSH_TEST==="true";
     if(testMode){
       try {
@@ -32,11 +32,12 @@ async function main() {
     const minutes=local.hour*60+local.minute;
     const [h,m]=s.time.split(":").map(Number);
     const delta=minutes-(h*60+m);
-    if(!s.days.includes(day) || delta<0 || delta>=15) continue;
+    console.log("Verificacao:",doc.id,"local:",local.toFormat("yyyy-MM-dd HH:mm"),"agendado:",s.time,"dia:",day,"dias:",s.days.join(","),"diferencaMin:",delta);
+    if(!s.days.includes(day) || delta<0 || delta>=45) {console.log("Fora da janela de envio:",doc.id);continue;}
     const key=local.toISODate()+"_"+s.time;
     const lock=db.collection("pushDispatches").doc(doc.id+"_"+key);
     try {await lock.create({createdAt:admin.firestore.FieldValue.serverTimestamp()});}
-    catch(e){if(e.code===6 || e.code==="already-exists")continue;throw e;}
+    catch(e){if(e.code===6 || e.code==="already-exists"){console.log("Lembrete ja processado:",doc.id,key);continue;}throw e;}
     try {
       await admin.messaging().send({
         token:s.token,
