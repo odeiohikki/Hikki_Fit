@@ -1,5 +1,5 @@
 "use strict";
-const CACHE="hikki-fit-v1-1-1";
+const CACHE="hikki-fit-v1-1-2";
 const ASSETS=["./","./index.html","./style.css","./script.js","./media.js","./final.js","./push.js","./manifest.webmanifest","./icon.svg"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
