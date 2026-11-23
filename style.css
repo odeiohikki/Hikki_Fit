@@ -532,3 +532,11 @@ body.light .hikki-demo-btn {
   }
 }
 
+
+/* Hikki Fit v1.0 — Conquistas e instalação */
+.hikki-achievements{display:grid;gap:10px;margin-top:14px}
+.hikki-achievement{display:flex;align-items:center;gap:14px;padding:13px;border:1px solid var(--border);border-radius:14px;background:var(--surface-alt);opacity:.58}
+.hikki-achievement.unlocked{opacity:1;border-color:var(--accent)}
+.hikki-achievement-icon{font-size:27px;min-width:35px;text-align:center}
+.hikki-achievement strong{display:block;font-size:14px}
+.hikki-achievement p{margin:4px 0 0}
