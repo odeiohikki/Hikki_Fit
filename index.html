@@ -19,23 +19,20 @@
         <h1>Hikki Fit 💜</h1>
       </div>
     </div>
-    <button id="themeBtn" class="icon-btn"
-      aria-label="Alternar tema">☀</button>
+    <button id="themeBtn" class="icon-btn" aria-label="Alternar tema">☀</button>
   </header>
 
   <main>
-    <!-- INÍCIO -->
     <section id="home" class="page active">
       <p class="muted">Bem-vindo de volta!</p>
       <h2>Um passo de cada vez ✨</h2>
-
+      <div id="reminderBanner" class="card reminder-banner" hidden></div>
       <div class="card">
         <span class="eyebrow">TREINO DE HOJE</span>
         <h3 id="todayTitle">Sua rotina começa aqui</h3>
         <p id="todayDescription" class="muted"></p>
         <div id="todayButtons"></div>
       </div>
-
       <h3 class="section-title">Minha evolução</h3>
       <div class="stats">
         <div class="card">
@@ -49,198 +46,174 @@
           <p class="muted">Exercícios realizados</p>
         </div>
       </div>
-      <p class="muted small">
-        Estatísticas baseadas nos treinos registrados.
-      </p>
     </section>
 
-    <!-- EXERCÍCIOS -->
     <section id="exercises" class="page">
       <span class="eyebrow">MINHA BIBLIOTECA</span>
       <h2>Exercícios 💪</h2>
       <p class="muted">Crie seus próprios exercícios.</p>
-      <button id="addExerciseBtn" class="primary-btn">
-        + Novo exercício
-      </button>
+      <button id="addExerciseBtn" class="primary-btn">+ Novo exercício</button>
       <p id="exerciseCount" class="muted small"></p>
       <div id="exerciseList" class="exercise-list"></div>
     </section>
 
-    <!-- ROTINA -->
     <section id="routine" class="page">
       <span class="eyebrow">ORGANIZAÇÃO SEMANAL</span>
       <h2>Minha rotina 📅</h2>
-      <p class="muted">
-        Organize seus treinos pelos dias da semana.
-      </p>
-      <button id="addWorkoutBtn" class="primary-btn">
-        + Criar treino
-      </button>
-
+      <p class="muted">Organize seus treinos pela semana.</p>
+      <button id="addWorkoutBtn" class="primary-btn">+ Criar treino</button>
       <h3 class="section-title">Minha semana</h3>
       <div id="weekOverview" class="week-overview"></div>
-
       <h3 class="section-title">Meus treinos</h3>
       <div id="workoutList" class="exercise-list"></div>
     </section>
 
-    <!-- EXECUÇÃO -->
     <section id="training" class="page">
-      <button id="backTraining" class="text-btn">
-        ← Sair do treino
-      </button>
-
+      <button id="backTraining" class="text-btn">← Sair do treino</button>
       <span class="eyebrow">TREINO EM ANDAMENTO</span>
-      <h2 id="trainingName">Meu treino</h2>
-
+      <h2 id="trainingName"></h2>
       <div class="progress-info">
         <span id="trainingProgressText"></span>
         <span id="trainingPercent"></span>
       </div>
-      <div class="progress-bar">
-        <div id="trainingProgressBar"></div>
-      </div>
-
+      <div class="progress-bar"><div id="trainingProgressBar"></div></div>
       <div class="card training-card">
         <span class="eyebrow">EXERCÍCIO ATUAL</span>
         <h2 id="currentExerciseName"></h2>
         <p id="currentExerciseDetails" class="muted"></p>
-
-        <div id="exerciseInstructions" class="instructions">
-        </div>
-
+        <div id="exerciseInstructions" class="instructions"></div>
         <div id="timerArea" hidden>
           <p class="muted">Temporizador</p>
-          <div id="timerDisplay" class="timer-display">
-            01:00
-          </div>
+          <div id="timerDisplay" class="timer-display">00:00</div>
           <div class="timer-actions">
-            <button id="timerToggle" class="secondary-btn">
-              ▶ Iniciar
-            </button>
-            <button id="timerReset" class="secondary-btn">
-              ↺ Reiniciar
-            </button>
+            <button id="timerToggle" class="secondary-btn">▶ Iniciar</button>
+            <button id="timerReset" class="secondary-btn">↺ Reiniciar</button>
           </div>
-          <p class="muted small">
-            O temporizador é um auxílio. Confirme a
-            conclusão manualmente.
-          </p>
+          <p class="muted small">Marque Feito após realizar todas as séries.</p>
         </div>
-
-        <button id="completeExercise" class="primary-btn">
-          ✓ Feito
-        </button>
-        <button id="nextExercise" class="secondary-btn wide">
-          Próximo →
-        </button>
+        <button id="completeExercise" class="primary-btn">✓ Feito</button>
+        <button id="nextExercise" class="secondary-btn wide">Próximo →</button>
       </div>
     </section>
 
-    <!-- HISTÓRICO -->
     <section id="history" class="page">
       <span class="eyebrow">MINHAS ATIVIDADES</span>
       <h2>Histórico 📖</h2>
-      <p class="muted">
-        Treinos concluídos e atividades registradas.
-      </p>
       <div id="historyList" class="exercise-list"></div>
     </section>
 
-    <!-- PERFIL -->
     <section id="profile" class="page">
       <span class="eyebrow">MINHA JORNADA</span>
       <h2>Meu perfil 🐱</h2>
-
       <div class="card profile-card">
         <div class="avatar">🐱</div>
         <h3>Hikki Fit</h3>
         <p class="muted">Nível 1 • XP em breve</p>
         <div class="xp-bar"><div></div></div>
       </div>
-
       <div class="card">
         <h3>Minhas atividades</h3>
         <p id="profileSummary" class="muted"></p>
-        <button id="openHistory" class="primary-btn">
-          📖 Ver histórico
+        <button id="openHistory" class="primary-btn">📖 Ver histórico</button>
+      </div>
+
+      <div class="card">
+        <h3>🔔 Lembretes</h3>
+        <p class="muted">Escolha quando deseja lembrar de treinar.</p>
+        <label class="switch-row">
+          <span>Ativar lembretes</span>
+          <input id="reminderEnabled" type="checkbox">
+        </label>
+        <label for="reminderTime">Horário</label>
+        <input id="reminderTime" type="time" value="18:00">
+        <label>Dias da semana</label>
+        <div id="reminderDays" class="day-selector">
+          <label><input type="checkbox" value="0">Dom</label>
+          <label><input type="checkbox" value="1">Seg</label>
+          <label><input type="checkbox" value="2">Ter</label>
+          <label><input type="checkbox" value="3">Qua</label>
+          <label><input type="checkbox" value="4">Qui</label>
+          <label><input type="checkbox" value="5">Sex</label>
+          <label><input type="checkbox" value="6">Sáb</label>
+        </div>
+        <button id="saveReminder" class="primary-btn">Salvar lembrete</button>
+        <button id="testReminder" class="secondary-btn wide">
+          🔔 Testar lembrete agora
         </button>
+        <button id="enableNotifications" class="secondary-btn wide">
+          Permitir notificações
+        </button>
+        <div class="diagnostic-panel">
+          <h3>🔍 Diagnóstico</h3>
+          <p id="reminderNext" class="muted small"></p>
+          <p id="reminderDiagnostic" class="muted small"></p>
+          <p id="notificationStatus" class="muted small"></p>
+        </div>
+        <p class="muted small">
+          Os avisos aparecem dentro do aplicativo quando ele está aberto.
+          Notificações do sistema dependem do navegador e não são
+          garantidas com o aplicativo fechado.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>💾 Meus dados</h3>
+        <p class="muted">Exporte ou restaure seus dados pessoais.</p>
+        <button id="exportBackup" class="primary-btn">Exportar backup</button>
+        <button id="importBackup" class="secondary-btn wide">Restaurar backup</button>
+        <input id="backupFile" type="file" accept=".json,application/json" hidden>
+        <p class="muted small">
+          Restaurar substitui os dados atuais. Exporte uma cópia antes.
+        </p>
       </div>
     </section>
   </main>
 
   <nav class="bottom-nav" aria-label="Navegação principal">
-    <button class="nav-btn active" data-page="home">
-      <span>⌂</span>Início
-    </button>
-    <button class="nav-btn" data-page="exercises">
-      <span>♢</span>Exercícios
-    </button>
-    <button class="nav-btn" data-page="routine">
-      <span>▦</span>Rotina
-    </button>
-    <button class="nav-btn" data-page="profile">
-      <span>◎</span>Perfil
-    </button>
+    <button class="nav-btn active" data-page="home"><span>⌂</span>Início</button>
+    <button class="nav-btn" data-page="exercises"><span>♢</span>Exercícios</button>
+    <button class="nav-btn" data-page="routine"><span>▦</span>Rotina</button>
+    <button class="nav-btn" data-page="profile"><span>◎</span>Perfil</button>
   </nav>
 </div>
 
-<!-- CADASTRO DE EXERCÍCIOS -->
 <dialog id="exerciseDialog">
   <form id="exerciseForm">
     <div class="dialog-header">
       <h2 id="exerciseFormTitle">Novo exercício</h2>
-      <button type="button" id="closeExerciseDialog"
-        class="close-btn">✕</button>
+      <button type="button" id="closeExerciseDialog" class="close-btn">✕</button>
     </div>
-
     <label for="exerciseName">Nome</label>
     <input id="exerciseName" maxlength="80" required>
-
     <label for="exerciseSets">Séries</label>
-    <input id="exerciseSets" type="number"
-      min="1" max="100" value="2" required>
-
+    <input id="exerciseSets" type="number" min="1" max="100" value="2" required>
     <label for="exerciseType">Tipo</label>
     <select id="exerciseType">
       <option value="reps">Repetições</option>
       <option value="time">Tempo</option>
     </select>
-
     <div id="repsField">
       <label for="exerciseReps">Repetições por série</label>
-      <input id="exerciseReps" type="number"
-        min="1" max="10000" value="10">
+      <input id="exerciseReps" type="number" min="1" max="10000" value="10">
     </div>
-
     <div id="timeField" hidden>
       <label for="exerciseDuration">Segundos por série</label>
-      <input id="exerciseDuration" type="number"
-        min="1" max="86400" value="60">
+      <input id="exerciseDuration" type="number" min="1" max="86400" value="60">
     </div>
-
     <label for="exerciseDescription">Instruções</label>
-    <textarea id="exerciseDescription"
-      rows="4" maxlength="2000"></textarea>
-
-    <button class="primary-btn" type="submit">
-      Salvar exercício
-    </button>
+    <textarea id="exerciseDescription" rows="4" maxlength="2000"></textarea>
+    <button class="primary-btn" type="submit">Salvar exercício</button>
   </form>
 </dialog>
 
-<!-- CADASTRO DE TREINOS -->
 <dialog id="workoutDialog">
   <form id="workoutForm">
     <div class="dialog-header">
       <h2 id="workoutFormTitle">Criar treino</h2>
-      <button type="button" id="closeWorkoutDialog"
-        class="close-btn">✕</button>
+      <button type="button" id="closeWorkoutDialog" class="close-btn">✕</button>
     </div>
-
     <label for="workoutName">Nome do treino</label>
     <input id="workoutName" maxlength="80" required>
-
     <label>Dias da semana</label>
     <div id="workoutDays" class="day-selector">
       <label><input type="checkbox" value="0">Dom</label>
@@ -251,18 +224,12 @@
       <label><input type="checkbox" value="5">Sex</label>
       <label><input type="checkbox" value="6">Sáb</label>
     </div>
-
     <label>Exercícios</label>
-    <div id="workoutExerciseOptions"
-      class="workout-exercise-options"></div>
-
-    <button class="primary-btn" type="submit">
-      Salvar treino
-    </button>
+    <div id="workoutExerciseOptions" class="workout-exercise-options"></div>
+    <button class="primary-btn" type="submit">Salvar treino</button>
   </form>
 </dialog>
 
-<div id="toast" class="toast" role="status"
-  aria-live="polite"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
