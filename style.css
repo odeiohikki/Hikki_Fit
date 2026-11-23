@@ -433,3 +433,102 @@ textarea { resize: vertical; }
   .day-selector { grid-template-columns: repeat(3,1fr); }
   .timer-display { font-size: 44px; }
 }
+
+/* ==========================================
+   HIKKI FIT v0.8
+   DEMONSTRAÇÕES DOS EXERCÍCIOS
+========================================== */
+
+.hikki-media-section {
+  margin: 24px 0;
+  padding: 18px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.hikki-media-section h3 {
+  margin-top: 0;
+  font-size: 17px;
+}
+
+.hikki-media-section input,
+.hikki-media-section select {
+  max-width: 100%;
+}
+
+.hikki-media-preview,
+.hikki-training-media-panel {
+  margin-top: 14px;
+  padding: 10px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.hikki-media-content {
+  display: block;
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #100b19;
+}
+
+.hikki-training-media {
+  margin-top: 18px;
+  margin-bottom: 12px;
+}
+
+.hikki-demo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  padding: 10px 15px;
+
+  background: rgba(146, 92, 218, 0.14);
+  color: #d8b7ff;
+
+  border: 1px solid rgba(180, 135, 240, 0.35);
+  border-radius: 12px;
+
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.hikki-demo-btn:hover {
+  background: rgba(146, 92, 218, 0.25);
+}
+
+.hikki-demo-btn:active {
+  transform: scale(0.97);
+}
+
+body.light .hikki-demo-btn {
+  color: #7943be;
+  background: rgba(146, 92, 218, 0.1);
+}
+
+.hikki-training-media-panel video {
+  width: 100%;
+}
+
+@media (max-width: 400px) {
+  .hikki-media-section {
+    padding: 12px;
+  }
+
+  .hikki-demo-btn {
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+}
+
