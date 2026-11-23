@@ -3,6 +3,12 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+    inputs:
+      test_push:
+        description: "Enviar push de teste agora (ignora horario)"
+        type: boolean
+        required: false
+        default: false
 permissions:
   contents: read
 jobs:
@@ -18,3 +24,4 @@ jobs:
       - run: node scripts/send-push.cjs
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          PUSH_TEST: ${{ inputs.test_push }}
