@@ -1,6 +1,6 @@
 "use strict";
-const CACHE="hikki-fit-v1-0-0";
-const ASSETS=["./","./index.html","./style.css","./script.js","./media.js","./final.js","./manifest.webmanifest","./icon.svg"];
+const CACHE="hikki-fit-v1-1-0";
+const ASSETS=["./","./index.html","./style.css","./script.js","./media.js","./final.js","./push.js","./manifest.webmanifest","./icon.svg"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
@@ -21,4 +21,19 @@ self.addEventListener("fetch",event=>{
     if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(request,copy));}
     return response;
   })));
+});
+self.addEventListener("push", event => {
+  let data={};
+  try {data=event.data ? event.data.json() : {};}catch{}
+  const notification=data.notification || {};
+  const title=notification.title || "Hikki Fit 💜";
+  const body=notification.body || "🐱 Miau! Hora de treinar!";
+  event.waitUntil(self.registration.showNotification(title,{
+    body,icon:"./icon.svg",badge:"./icon.svg",tag:"hikki-fit-reminder",
+    data:{url:self.registration.scope}
+  }));
+});
+self.addEventListener("notificationclick",event=>{
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data?.url || self.registration.scope));
 });
