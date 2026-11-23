@@ -137,19 +137,19 @@
       tx.onabort=()=>{db.close();reject(tx.error);};
     }));
   }
-  $id("backupFile").addEventListener("change",async event=>{
+  const originalBackupImport=$id("backupFile").onchange;
+  $id("backupFile").onchange=async event=>{
     const file=event.target.files && event.target.files[0];
     if(!file)return;
-    // Capture before the v1 listener. v1 backups continue through the original handler.
     if(file.size>90*1024*1024){
-      event.stopImmediatePropagation();event.target.value="";
+      event.target.value="";
       toast("Backup grande demais (limite 90 MB).");return;
     }
     let backup;
     try{backup=JSON.parse(await file.text());}
-    catch{event.stopImmediatePropagation();event.target.value="";toast("JSON inválido.");return;}
-    if(backup.version!==2)return;
-    event.stopImmediatePropagation();
+    catch{event.target.value="";toast("JSON inválido.");return;}
+    if(backup.version!==2){return originalBackupImport.call(this,event);}
+
     event.target.value="";
     if(!validV2(backup)){toast("Backup v2 inválido.");return;}
     if(!confirm("Restaurar o backup v2? Isso substitui exercícios, histórico e mídias atuais."))return;
@@ -182,7 +182,7 @@
       }catch(rollbackError){console.error("Falha ao recuperar mídias",rollbackError);}
       toast("Não foi possível restaurar o backup.");
     }finally{btn.disabled=false;}
-  },true);
+  };
 
   // Instalação PWA
   const install=document.createElement("button");
