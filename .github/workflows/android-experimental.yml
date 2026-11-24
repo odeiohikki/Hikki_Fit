@@ -1,7 +1,7 @@
-name: Hikki Fit 2.0 Beta
+name: Hikki Fit 2.0 Definitive
 on:
   push:
-    branches: [hikki-fit-v2-beta]
+    branches: [hikki-fit-v2-definitive]
     paths:
       - 'package.json'
       - 'capacitor.config.json'
@@ -90,7 +90,7 @@ jobs:
           s=p.read_text()
           s,n=re.subn(r"versionCode\s+\d+","versionCode "+str(1000+int(os.environ["GITHUB_RUN_NUMBER"])),s)
           assert n==1
-          s,n=re.subn(r'versionName\s+"[^"]+"','versionName "2.0-beta.3"',s)
+          s,n=re.subn(r'versionName\s+"[^"]+"','versionName "2.0"',s)
           assert n==1
           p.write_text(s)
           PY
@@ -112,6 +112,6 @@ jobs:
           "$TOOLS/apksigner" verify --verbose --print-certs Hikki-Fit.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: hikki-fit-beta3-assinado-${{ github.run_number }}
+          name: hikki-fit-definitive-${{ github.run_number }}
           path: Hikki-Fit.apk
           if-no-files-found: error
