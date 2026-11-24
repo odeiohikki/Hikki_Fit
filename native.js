@@ -4,7 +4,7 @@
  if(!cap?.isNativePlatform?.())return;
  const plugins=cap.Plugins, notifications=plugins.LocalNotifications;
  const profile=document.getElementById('profile');
- const badge=document.createElement('p');badge.className='muted small';badge.textContent='Android • 2.0 Definitive';document.querySelector('.topbar').after(badge);
+ const badge=document.createElement('p');badge.className='muted small';badge.textContent='Android • 2.0';document.querySelector('.topbar').after(badge);
  const panel=document.createElement('section');panel.className='card';
  const heading=document.createElement('h3');heading.textContent='🔔 Notificações nativas — teste';panel.append(heading);
  const status=document.createElement('p');status.className='muted';status.setAttribute('role','status');status.textContent='Teste local, sem Firebase. Agende e feche normalmente o aplicativo.';panel.append(status);
@@ -25,7 +25,7 @@
  button('Diagnóstico',async()=>{const p=await notifications.checkPermissions();const e=await notifications.checkExactNotificationSetting();const pending=await notifications.getPending();return 'Notificações: '+p.display+' • Alarmes exatos: '+e.exact_alarm+' • Pendentes: '+pending.notifications.map(n=>n.id).join(', ')+' • '+(JSON.parse(localStorage.getItem('hikki_native_log')||'[]').slice(-5).join(' | '));});
  button('Cancelar notificações de teste',async()=>{await notifications.cancel({notifications:ids.map(id=>({id}))});log('Testes cancelados');return 'Testes cancelados.';});
  const about=document.createElement('section');about.className='card';
- const version=document.createElement('button');version.type='button';version.className='secondary-btn wide';version.textContent='Hikki Fit 2.0 Definitive • Hikki Studio';
+ const version=document.createElement('button');version.type='button';version.className='secondary-btn wide';version.textContent='Hikki Fit 2.0 • Hikki Studio';
  const hint=document.createElement('p');hint.className='muted small';hint.setAttribute('aria-live','polite');
  const dev=document.createElement('section');dev.className='card';dev.id='developerMenu';
  const title=document.createElement('h3');title.textContent='🛠 Menu de desenvolvedor';
@@ -50,16 +50,16 @@
  async function syncWake(){try{await plugins.HikkiBackup.setAwake({enabled:!!session&&!document.hidden});return;}catch{}if(!session||document.hidden){if(wakeLock){const old=wakeLock;wakeLock=null;await old.release().catch(()=>{});}return;}if(wakeLock||wakePending||!navigator.wakeLock)return;wakePending=true;try{const lock=await navigator.wakeLock.request('screen');if(!session||document.hidden){await lock.release();return;}wakeLock=lock;lock.addEventListener('release',()=>{if(wakeLock===lock)wakeLock=null;});}catch{}finally{wakePending=false;}}
  const pageBeforeWake=showPage;showPage=function(page){pageBeforeWake(page);void syncWake();};document.addEventListener('visibilitychange',()=>void syncWake());
  const reminderIds=Array.from({length:7},(_,i)=>92000+i);
+ let reminderQueue=Promise.resolve();
  async function syncReminders(){
+  if(reminders.enabled){await permission();await ensureChannel();}
   await notifications.cancel({notifications:reminderIds.map(id=>({id}))});
   if(!reminders.enabled)return;
-  await permission();
-  await ensureChannel();
   const [hour,minute]=reminders.time.split(':').map(Number);
   const list=reminders.days.map(day=>({id:92000+Number(day),channelId,title:'Hikki Fit 💜',body:'🐢 Seu treino, seu ritmo.',schedule:{on:{weekday:Number(day)+1,hour,minute},allowWhileIdle:true}}));
   if(list.length)await notifications.schedule({notifications:list});
  }
- document.getElementById('saveReminder').addEventListener('click',()=>{setTimeout(()=>syncReminders().then(()=>{syncStatus.textContent='Lembretes nativos atualizados.';}).catch(e=>{syncStatus.textContent='Falha ao sincronizar: '+e.message;}),0);});
+ document.getElementById('saveReminder').addEventListener('click',()=>{setTimeout(()=>{reminderQueue=reminderQueue.catch(()=>{}).then(syncReminders).then(()=>{syncStatus.textContent='Lembretes nativos atualizados.';}).catch(e=>{syncStatus.textContent='Falha ao sincronizar: '+e.message;});},0);});
 
  // Existing browser reminder UI remains available for in-app reminders only.
  const old=document.getElementById('enableNotifications');if(old)old.hidden=true;
