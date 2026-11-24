@@ -29,6 +29,14 @@
     {icon:"🌙",name:"Constância lunar",desc:"Treinar 7 dias seguidos",check:()=>streak().longest>=7},
     {icon:"⭐",name:"Estrela roxa",desc:"Alcançar nível 5",check:()=>calcularNivel().nivel>=5}
   ];
+  const milestones=[
+    ["🐢","Jornada",()=>history.length,[2,5,15,20,30,40,75,100,150,200,300,500],"treinos concluídos"],
+    ["🌙","Ascensão",()=>calcularNivel().nivel,[2,3,4,6,8,10,15,20,25,35,50,75],"nível alcançado"],
+    ["⏳","Tempo dedicado",()=>Math.floor(history.reduce((n,h)=>n+(h.durationSeconds||0),0)/60),[15,30,60,120,240,480,720,1000,1500,2000,3000,5000],"minutos de treino"],
+    ["⭐","Movimento",()=>history.reduce((n,h)=>n+h.exercises.length,0),[5,15,25,50,75,100,200,300,500,1000,1500,2000],"exercícios concluídos"],
+    ["🌿","Dias ativos",()=>completedDays().size,[2,5,10,20,30,50],"dias com treino"]
+  ];
+  for(const [icon,label,metric,thresholds,unit] of milestones)for(const n of thresholds)achievements.push({icon,name:label+" • "+n,desc:n+" "+unit,check:()=>metric()>=n});
   const card=document.createElement("section");
   card.className="card";
   card.innerHTML='<h3>🏅 Conquistas</h3><p id="hikkiStreak" class="muted"></p><div id="hikkiAchievements" class="hikki-achievements"></div>';
