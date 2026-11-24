@@ -43,6 +43,12 @@
  close.onclick=()=>{taps=0;toggle(false);};
  const aboutDialog=document.createElement('dialog');const aboutTitle=document.createElement('h2');aboutTitle.textContent='Sobre o Hikki Fit';const aboutCopy=document.createElement('p');aboutCopy.textContent='Hikki Studio • Seu treino, seu ritmo. Aplicativo pessoal de exercícios, com dados armazenados localmente e funcionamento offline. Mídias externas podem exigir internet.';const aboutClose=document.createElement('button');aboutClose.className='secondary-btn wide';aboutClose.textContent='Voltar';aboutClose.onclick=()=>aboutDialog.close();aboutDialog.append(aboutTitle,aboutCopy,version,hint,aboutClose);document.body.append(aboutDialog);const openAbout=document.createElement('button');openAbout.className='secondary-btn wide';openAbout.textContent='Sobre o aplicativo';openAbout.onclick=()=>aboutDialog.showModal();about.append(openAbout);profile.append(about,dev);toggle(localStorage.getItem('hikki_dev_enabled')==='1');
 
+ const backupPref=document.createElement('label');const backupCheck=document.createElement('input');backupCheck.type='checkbox';backupCheck.checked=localStorage.getItem('hikki_backup_reminder')==='1';backupPref.append(backupCheck,document.createTextNode(' Lembrar de fazer backup a cada 30 dias'));const backupStatus=document.createElement('p');backupStatus.className='muted small';document.getElementById('exportBackup').closest('.card').append(backupPref,backupStatus);
+ function checkBackup(){const last=Number(localStorage.getItem('hikki_last_backup')||0);backupStatus.textContent=backupCheck.checked&&Date.now()-last>=30*86400000?'💾 Está na hora de guardar uma cópia dos seus dados.':'';}
+ backupCheck.onchange=()=>{localStorage.setItem('hikki_backup_reminder',backupCheck.checked?'1':'0');checkBackup();};checkBackup();document.addEventListener('visibilitychange',checkBackup);
+ let wakeLock=null,wakePending=false;
+ async function syncWake(){if(!session||document.hidden){if(wakeLock){const old=wakeLock;wakeLock=null;await old.release().catch(()=>{});}return;}if(wakeLock||wakePending||!navigator.wakeLock)return;wakePending=true;try{const lock=await navigator.wakeLock.request('screen');if(!session||document.hidden){await lock.release();return;}wakeLock=lock;lock.addEventListener('release',()=>{if(wakeLock===lock)wakeLock=null;});}catch{}finally{wakePending=false;}}
+ const pageBeforeWake=showPage;showPage=function(page){pageBeforeWake(page);void syncWake();};document.addEventListener('visibilitychange',()=>void syncWake());
  const reminderIds=Array.from({length:7},(_,i)=>92000+i);
  async function syncReminders(){
   await notifications.cancel({notifications:reminderIds.map(id=>({id}))});
@@ -60,7 +66,7 @@
  window.hikkiNativeExport=async (value,share=false)=>{
  const name='hikki-fit-backup-v2-'+new Date().toISOString().slice(0,10)+'.json';
  const file=await plugins.Filesystem.writeFile({path:name,data:JSON.stringify(value),directory:'CACHE',encoding:'utf8'});
- if(!share){return plugins.HikkiBackup.save({uri:file.uri,name});}
+ if(!share){const result=await plugins.HikkiBackup.save({uri:file.uri,name});if(result?.saved===true){localStorage.setItem('hikki_last_backup',String(Date.now()));checkBackup();}return result;}
  await plugins.Share.share({title:'Backup Hikki Fit',files:[file.uri],dialogTitle:'Salvar backup'});
  };
 })();
