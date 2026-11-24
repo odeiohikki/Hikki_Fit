@@ -6,7 +6,7 @@ test('backup beta inclui perfil e separa compartilhamento',()=>{const f=fs.readF
 test('conselhos originais e cinco estágios do mascote',()=>{
  const src=fs.readFileSync('journey.js','utf8');
  const tips=JSON.parse(src.match(/const tips=(\[[^\n]*\]);/)[1]);
- assert.ok(tips.length>=210);
+ assert.equal(tips.length,365);
  assert.equal(new Set(tips).size,tips.length);
  assert.ok(tips.every(t=>typeof t==='string'&&t.trim().length>=20));
  const stages=JSON.parse(src.match(/const turtleStages=(\[[^\n]*?\]);const mascot=/)[1]);
