@@ -50,17 +50,26 @@
  async function syncWake(){try{await plugins.HikkiBackup.setAwake({enabled:!!session&&!document.hidden});return;}catch{}if(!session||document.hidden){if(wakeLock){const old=wakeLock;wakeLock=null;await old.release().catch(()=>{});}return;}if(wakeLock||wakePending||!navigator.wakeLock)return;wakePending=true;try{const lock=await navigator.wakeLock.request('screen');if(!session||document.hidden){await lock.release();return;}wakeLock=lock;lock.addEventListener('release',()=>{if(wakeLock===lock)wakeLock=null;});}catch{}finally{wakePending=false;}}
  const pageBeforeWake=showPage;showPage=function(page){pageBeforeWake(page);void syncWake();};document.addEventListener('visibilitychange',()=>void syncWake());
  const reminderIds=Array.from({length:7},(_,i)=>92000+i);
+ const reminderSyncKey='hikki_native_reminder_config';
+ const reminderSignature=()=>JSON.stringify([reminders.enabled,reminders.time,reminders.days]);
  let reminderQueue=Promise.resolve();
  async function syncReminders(){
   if(reminders.enabled){await permission();await ensureChannel();}
   await notifications.cancel({notifications:reminderIds.map(id=>({id}))});
-  if(!reminders.enabled)return;
+  if(!reminders.enabled){localStorage.setItem(reminderSyncKey,reminderSignature());return;}
   const [hour,minute]=reminders.time.split(':').map(Number);
   const list=reminders.days.map(day=>({id:92000+Number(day),channelId,title:'Hikki Fit 💜',body:'🐢 Seu treino, seu ritmo.',schedule:{on:{weekday:Number(day)+1,hour,minute},allowWhileIdle:true}}));
   if(list.length)await notifications.schedule({notifications:list});
+  localStorage.setItem(reminderSyncKey,reminderSignature());
  }
  document.getElementById('saveReminder').addEventListener('click',()=>{setTimeout(()=>{reminderQueue=reminderQueue.catch(()=>{}).then(syncReminders).then(()=>{syncStatus.textContent='Lembretes nativos atualizados.';}).catch(e=>{syncStatus.textContent='Falha ao sincronizar: '+e.message;});},0);});
 
+ async function reconcileReminders(){
+  if(localStorage.getItem(reminderSyncKey)===reminderSignature())return;
+  if(reminders.enabled&&(await notifications.checkPermissions()).display!=='granted'){syncStatus.textContent='Permita notificações e salve os lembretes para ativá-los.';return;}
+  reminderQueue=reminderQueue.catch(()=>{}).then(syncReminders);await reminderQueue;
+ }
+ void reconcileReminders().catch(e=>{syncStatus.textContent='Falha ao sincronizar: '+e.message;});
  // Existing browser reminder UI remains available for in-app reminders only.
  const old=document.getElementById('enableNotifications');if(old)old.hidden=true;
  window.hikkiNativeExport=async (value,share=false)=>{
