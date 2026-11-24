@@ -14,6 +14,7 @@ on:
       - '*.html'
       - '*.css'
       - 'icon.svg'
+      - 'hikki-launcher.png'
   workflow_dispatch:
 permissions:
   contents: read
@@ -73,16 +74,27 @@ jobs:
       - name: Preparar icone e versao Android
         run: |
           python -m venv /tmp/hikki-icon
-          /tmp/hikki-icon/bin/pip install cairosvg==2.7.1
+          /tmp/hikki-icon/bin/pip install cairosvg==2.7.1 Pillow==11.3.0
           /tmp/hikki-icon/bin/python - <<'PY'
           from pathlib import Path
           import cairosvg, re, os
+          from PIL import Image
+          launcher=Path('hikki-launcher.png')
+          image=Image.open(launcher).convert('RGBA') if launcher.exists() else None
+          if image is not None:
+              assert image.width==image.height, 'Icone precisa ser quadrado'
+              assert image.getpixel((0,0))[3]==0, 'Icone precisa ter cantos transparentes'
+          else:
+              print('::warning::Icone oficial ainda ausente; usando icon.svg')
           res=Path("android/app/src/main/res")
           for folder,size in {"mdpi":48,"hdpi":72,"xhdpi":96,"xxhdpi":144,"xxxhdpi":192}.items():
               dest=res/("mipmap-"+folder)
               dest.mkdir(exist_ok=True)
               for name in ["ic_launcher","ic_launcher_round"]:
-                  cairosvg.svg2png(url="icon.svg",write_to=str(dest/(name+".png")),output_width=size,output_height=size)
+                  if image is not None:
+                      image.resize((size,size),Image.Resampling.LANCZOS).save(dest/(name+".png"))
+                  else:
+                      cairosvg.svg2png(url="icon.svg",write_to=str(dest/(name+".png")),output_width=size,output_height=size)
           for name in ["ic_launcher.xml","ic_launcher_round.xml"]:
               for p in res.glob("mipmap-anydpi*/"+name):
                   p.unlink()
