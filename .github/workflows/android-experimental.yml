@@ -13,6 +13,7 @@ on:
       - '*.js'
       - '*.html'
       - '*.css'
+      - 'icon.svg'
   workflow_dispatch:
 permissions:
   contents: read
@@ -69,9 +70,48 @@ jobs:
           p.write_text(s)
           PY
       - run: npx cap sync android
-      - run: chmod +x android/gradlew && cd android && ./gradlew assembleDebug
+      - name: Preparar icone e versao Android
+        run: |
+          python -m venv /tmp/hikki-icon
+          /tmp/hikki-icon/bin/pip install cairosvg==2.7.1
+          /tmp/hikki-icon/bin/python - <<'PY'
+          from pathlib import Path
+          import cairosvg, re, os
+          res=Path("android/app/src/main/res")
+          for folder,size in {"mdpi":48,"hdpi":72,"xhdpi":96,"xxhdpi":144,"xxxhdpi":192}.items():
+              dest=res/("mipmap-"+folder)
+              dest.mkdir(exist_ok=True)
+              for name in ["ic_launcher","ic_launcher_round"]:
+                  cairosvg.svg2png(url="icon.svg",write_to=str(dest/(name+".png")),output_width=size,output_height=size)
+          for name in ["ic_launcher.xml","ic_launcher_round.xml"]:
+              for p in res.glob("mipmap-anydpi*/"+name):
+                  p.unlink()
+          p=Path("android/app/build.gradle")
+          s=p.read_text()
+          s,n=re.subn(r"versionCode\s+\d+","versionCode "+str(1000+int(os.environ["GITHUB_RUN_NUMBER"])),s)
+          assert n==1
+          s,n=re.subn(r'versionName\s+"[^"]+"','versionName "2.0-beta.3"',s)
+          assert n==1
+          p.write_text(s)
+          PY
+      - run: chmod +x android/gradlew && cd android && ./gradlew assembleRelease
+      - name: Assinar APK com chave permanente
+        env:
+          HIKKI_KEYSTORE_BASE64: ${{ secrets.HIKKI_KEYSTORE_BASE64 }}
+          HIKKI_KEYSTORE_PASSWORD: ${{ secrets.HIKKI_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$HIKKI_KEYSTORE_BASE64" && test -n "$HIKKI_KEYSTORE_PASSWORD" || { echo "Configure os secrets de assinatura antes de compilar."; exit 1; }
+          umask 077
+          KEY="$RUNNER_TEMP/hikki-signing.p12"
+          trap 'rm -f "$KEY"' EXIT
+          printf '%s' "$HIKKI_KEYSTORE_BASE64" | base64 --decode > "$KEY"
+          TOOLS="$ANDROID_HOME/build-tools/35.0.0"
+          "$TOOLS/zipalign" -f -p 4 android/app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/hikki-aligned.apk"
+          "$TOOLS/apksigner" sign --ks "$KEY" --ks-type PKCS12 --ks-key-alias hikki --ks-pass env:HIKKI_KEYSTORE_PASSWORD --key-pass env:HIKKI_KEYSTORE_PASSWORD --out Hikki-Fit.apk "$RUNNER_TEMP/hikki-aligned.apk"
+          "$TOOLS/apksigner" verify --verbose --print-certs Hikki-Fit.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: hikki-fit-v2-beta-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: hikki-fit-beta3-assinado-${{ github.run_number }}
+          path: Hikki-Fit.apk
           if-no-files-found: error
