@@ -23,6 +23,17 @@
  button('Diagnóstico',async()=>{const p=await notifications.checkPermissions();const e=await notifications.checkExactNotificationSetting();const pending=await notifications.getPending();return 'Notificações: '+p.display+' • Alarmes exatos: '+e.exact_alarm+' • Pendentes: '+pending.notifications.map(n=>n.id).join(', ')+' • '+(JSON.parse(localStorage.getItem('hikki_native_log')||'[]').slice(-5).join(' | '));});
  button('Cancelar notificações de teste',async()=>{await notifications.cancel({notifications:ids.map(id=>({id}))});log('Testes cancelados');return 'Testes cancelados.';});
  profile.append(panel);
+ const reminderIds=Array.from({length:7},(_,i)=>92000+i);
+ async function syncReminders(){
+  await notifications.cancel({notifications:reminderIds.map(id=>({id}))});
+  if(!reminders.enabled)return;
+  await permission();
+  const [hour,minute]=reminders.time.split(':').map(Number);
+  const list=reminders.days.map(day=>({id:92000+Number(day),title:'Hikki Fit 💜',body:'🐢 Seu treino, seu ritmo.',schedule:{on:{weekday:Number(day)+1,hour,minute},allowWhileIdle:true}}));
+  if(list.length)await notifications.schedule({notifications:list});
+ }
+ document.getElementById('saveReminder').addEventListener('click',()=>{setTimeout(()=>syncReminders().then(()=>{status.textContent='Lembretes nativos atualizados.';}).catch(e=>{status.textContent='Falha ao sincronizar: '+e.message;}),0);});
+
  // Existing browser reminder UI remains available for in-app reminders only.
  const old=document.getElementById('enableNotifications');if(old)old.hidden=true;
  window.hikkiNativeExport=async (value,share=false)=>{
