@@ -14,9 +14,17 @@
  const shells=el("select");shells.setAttribute("aria-label","Casco");
  const goal=el("input");goal.type="number";goal.min=1;goal.max=7;goal.value=state.goal;goal.setAttribute("aria-label","Meta semanal de dias ativos");
  function commit(p){const next=normalize({...state,...p});if(save(key,next)){state=next;refresh();}}
- settings.append(el("label","Nome"),name,el("label","Foto de perfil (até 280 KB)"),photo,button("Remover foto","secondary-btn wide",()=>commit({photo:""})),el("label","Título"),titles,el("label","Casco"),shells,el("label","Meta opcional de dias ativos por semana"),goal,button("Salvar perfil","primary-btn",()=>commit({name:name.value.trim()||defaults.name,title:titles.value,shell:shells.value,goal:Number(goal.value)})));
- photo.onchange=()=>{const f=photo.files[0];if(!f)return;if(f.size>280000){toast("Escolha uma imagem menor.");return;}const reader=new FileReader();reader.onload=()=>commit({photo:reader.result});reader.readAsDataURL(f);};
+ settings.append(el("label","Nome"),name,el("label","Título"),titles,el("label","Casco"),shells,el("label","Meta opcional de dias ativos por semana"),goal,button("Salvar perfil","primary-btn",()=>commit({name:name.value.trim()||defaults.name,title:titles.value,shell:shells.value,goal:Number(goal.value)})));
+ photo.onchange=()=>{const f=photo.files[0];photo.value="";if(!f)return;if(f.size>280000){toast("Escolha uma imagem menor.");return;}const reader=new FileReader();reader.onload=()=>{if(!normalize({photo:reader.result}).photo){toast("Formato de imagem inválido.");return;}commit({photo:reader.result});photoDialog.close();};reader.readAsDataURL(f);};
  profile.after(settings);
+ const avatarButton=profile.querySelector(".avatar");
+ avatarButton.setAttribute("role","button");avatarButton.tabIndex=0;avatarButton.setAttribute("aria-label","Alterar foto de perfil");
+ const photoDialog=el("dialog");photoDialog.append(el("h3","Foto de perfil"),el("p","Escolha uma imagem de até 280 KB.","muted"),button("Escolher nova foto","primary-btn",()=>photo.click()),button("Remover foto","secondary-btn wide",()=>{commit({photo:""});photoDialog.close();}),button("Cancelar","secondary-btn wide",()=>photoDialog.close()));
+ photo.hidden=true;photoDialog.append(photo);document.body.append(photoDialog);
+ avatarButton.onclick=()=>photoDialog.showModal();
+ avatarButton.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();photoDialog.showModal();}};
+ profile.classList.add("compact-profile");
+ 
  const mascot=card("🌙 Universo Hikki"), stage=el("p"), turtle=el("img");turtle.src="icon.svg";turtle.alt="Tartaruga Hikki";turtle.className="journey-turtle";mascot.append(turtle,stage,el("p","Seu ritmo é suficiente. Descansar também faz parte.","muted"));home.prepend(mascot);
  const tips=["Beba água ao longo do dia.","Descanse entre sessões intensas.","Comece com movimentos leves.","Priorize uma técnica confortável.","Durma o suficiente para recuperar.","Faça pausas quando precisar.","Uma alimentação variada ajuda na recuperação.","Não treine através de dor aguda.","Progresso não precisa ser rápido.","Ajuste o treino ao seu nível de energia."];
  const tip=card("✨ Dica do dia");const today=new Date();tip.append(el("p",tips[Math.floor(Date.UTC(today.getFullYear(),today.getMonth(),today.getDate())/86400000)%tips.length]));mascot.after(tip);
