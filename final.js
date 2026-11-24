@@ -130,6 +130,7 @@
     if(!backup || backup.app!=="Hikki Fit" || backup.version!==2 || !Array.isArray(backup.media))return false;
     return validateBackup({...backup,version:1}) &&
       backup.media.length<=backup.data.exercises.length &&
+      new Set(backup.media.map(m=>m?.id)).size===backup.media.length &&
       backup.media.every(m=>m && typeof m.id==="string" && backup.data.exercises.some(e=>e.id===m.id) &&
         (m.kind==="link" ? validMediaUrl(m.url) && ["image","video"].includes(m.type) :
          m.kind==="file" && typeof m.content==="string" && typeof m.name==="string"));
@@ -167,9 +168,10 @@
     let previousMedia=[];
     try{
       previousMedia=await readAllMedia();
-      const decoded=backup.media.map(m=>[m.id,m.kind==="link"?
-        {kind:"link",url:m.url,type:m.type}:
-        {kind:"file",name:m.name,mime:decodeDataUrl(m.content).type,blob:decodeDataUrl(m.content)}]);
+      const decoded=backup.media.map(m=>{
+        if(m.kind==="link")return [m.id,{kind:"link",url:m.url,type:m.type}];
+        const blob=decodeDataUrl(m.content);return [m.id,{kind:"file",name:m.name,mime:blob.type,blob}];
+      });
       await writeMediaBatch(decoded);
       const data=backup.data;
       [data.exercises,data.workouts,data.history,data.reminders,data.theme].forEach((value,i)=>{
