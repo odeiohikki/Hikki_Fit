@@ -706,7 +706,12 @@ function startWorkout(id) {
   renderTraining();
 }
 
+let restDeadline=0, restInterval=0;
+function clearRest(){clearInterval(restInterval);restInterval=0;restDeadline=0;const b=$("restButton");if(b)b.textContent="Descansar • 30 s";}
+const restButton=el("button","Descansar • 30 s","secondary-btn wide");restButton.id="restButton";$("completeExercise").before(restButton);
+restButton.onclick=()=>{if(!session)return;if(restDeadline){clearRest();return;}restDeadline=Date.now()+30000;const tick=()=>{const n=Math.max(0,Math.ceil((restDeadline-Date.now())/1000));if(!n){clearRest();toast("Descanso concluído! 💜");return;}restButton.textContent="Descanso: "+n+" s • Pular";};tick();restInterval=setInterval(tick,250);};
 function renderTraining() {
+  clearRest();
   if (!session) return;
 
   resetTimer();
@@ -840,12 +845,17 @@ function finishWorkout() {
 
   if (!save(KEYS.history, next)) return;
 
+  const previousLevel=calcularNivel();
+  const recordDuration=history.reduce((m,h)=>Math.max(m,h.durationSeconds||0),0);
   history = next;
   session = null;
-
+  clearRest();
   showPage("home");
-
-  toast("Treino finalizado! Parabéns! 🎉");
+  const progress=calcularNivel();
+  const summary=el("dialog");
+  summary.append(el("h2","🎉 Treino concluído!"),el("p","Mais um passinho na sua jornada."),el("p","Duração: "+formatTime(record.durationSeconds)),el("p","Exercícios: "+record.exercises.length),el("p","Séries previstas: "+record.exercises.reduce((n,e)=>n+Number(e.sets||0),0)),el("p","XP recebido: +"+(progress.xpTotal-previousLevel.xpTotal)),el("p","Nível "+progress.nivel+" • "+progress.porcentagem+"% para o próximo nível"));
+  if(record.durationSeconds>recordDuration&&recordDuration>0)summary.append(el("p","🏆 Novo recorde de duração!"));
+  summary.append(button("Voltar ao início","primary-btn",()=>summary.close()));summary.addEventListener("close",()=>summary.remove(),{once:true});document.body.append(summary);summary.showModal();
 }
 
 $("backTraining").onclick = () => {
@@ -860,6 +870,7 @@ $("backTraining").onclick = () => {
   }
 
   stopTimer();
+  clearRest();
   session = null;
 
   showPage("home");
