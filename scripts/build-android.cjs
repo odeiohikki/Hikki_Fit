@@ -17,8 +17,10 @@ final=final.replace('$id("exportBackup").onclick=async()=>{','async function exp
 .replace('  function decodeDataUrl(value){','  $id("exportBackup").onclick=()=>exportBackup(false);\n  const shareButton=document.createElement("button");shareButton.className="secondary-btn wide";shareButton.textContent="Compartilhar backup";shareButton.onclick=()=>exportBackup(true);$id("exportBackup").after(shareButton);\n  function decodeDataUrl(value){')
 .replace('card.after(installCard);','if(!window.Capacitor?.isNativePlatform?.())card.after(installCard);')
 .replace('if("serviceWorker" in navigator','if(!window.Capacitor?.isNativePlatform?.() && "serviceWorker" in navigator')
-.replace('let previousMedia=[];','let previousMedia=null;')
-.replace('const recovered=previousMedia.map','if(previousMedia===null)throw Error("Mídias anteriores não foram alteradas");\n        const recovered=previousMedia.map');
+.replace('let previousMedia=[];','let previousMedia=null; let mediaChanged=false;')
+.replace('await writeMediaBatch(decoded);','await writeMediaBatch(decoded); mediaChanged=true;')
+.replace('const recovered=previousMedia.map','if(mediaChanged&&previousMedia!==null){\n        const recovered=previousMedia.map');
+final=final.replace('await writeMediaBatch(recovered);','await writeMediaBatch(recovered); }');
 fs.writeFileSync(path.join(out,'final.js'),final);
 
 final=final.replace('version:2,media};','version:2,media,journey:window.hikkiJourney?.export()};').replace('let previousMedia=null;','if(window.hikkiJourney)previous[window.hikkiJourney.key]=localStorage.getItem(window.hikkiJourney.key);\n    let previousMedia=null;').replace('localStorage.removeItem(KEYS.reminderDismissed);','if(window.hikkiJourney && backup.journey) localStorage.setItem(window.hikkiJourney.key,JSON.stringify(window.hikkiJourney.normalize(backup.journey)));\n      localStorage.removeItem(KEYS.reminderDismissed);').replace('keys.forEach(k=>{try{previous[k]','Object.keys(previous).forEach(k=>{try{previous[k]');
