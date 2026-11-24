@@ -47,7 +47,7 @@
  function checkBackup(){const last=Number(localStorage.getItem('hikki_last_backup')||0);backupStatus.textContent=backupCheck.checked&&Date.now()-last>=30*86400000?'💾 Está na hora de guardar uma cópia dos seus dados.':'';}
  backupCheck.onchange=()=>{localStorage.setItem('hikki_backup_reminder',backupCheck.checked?'1':'0');checkBackup();};checkBackup();document.addEventListener('visibilitychange',checkBackup);
  let wakeLock=null,wakePending=false;
- async function syncWake(){if(!session||document.hidden){if(wakeLock){const old=wakeLock;wakeLock=null;await old.release().catch(()=>{});}return;}if(wakeLock||wakePending||!navigator.wakeLock)return;wakePending=true;try{const lock=await navigator.wakeLock.request('screen');if(!session||document.hidden){await lock.release();return;}wakeLock=lock;lock.addEventListener('release',()=>{if(wakeLock===lock)wakeLock=null;});}catch{}finally{wakePending=false;}}
+ async function syncWake(){try{await plugins.HikkiBackup.setAwake({enabled:!!session&&!document.hidden});return;}catch{}if(!session||document.hidden){if(wakeLock){const old=wakeLock;wakeLock=null;await old.release().catch(()=>{});}return;}if(wakeLock||wakePending||!navigator.wakeLock)return;wakePending=true;try{const lock=await navigator.wakeLock.request('screen');if(!session||document.hidden){await lock.release();return;}wakeLock=lock;lock.addEventListener('release',()=>{if(wakeLock===lock)wakeLock=null;});}catch{}finally{wakePending=false;}}
  const pageBeforeWake=showPage;showPage=function(page){pageBeforeWake(page);void syncWake();};document.addEventListener('visibilitychange',()=>void syncWake());
  const reminderIds=Array.from({length:7},(_,i)=>92000+i);
  async function syncReminders(){
