@@ -563,3 +563,5 @@ body.light .hikki-demo-btn {
 .compact-profile .avatar[data-frame] img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
 
 .journey-mascot-compact .journey-mascot-body{display:flex;align-items:center;gap:12px}.journey-mascot-compact .journey-turtle{width:64px;height:64px;object-fit:contain;margin:0;flex:0 0 64px}.journey-mascot-text{min-width:0;flex:1}.journey-mascot-text p{margin:4px 0;font-size:.9rem}.journey-mascot-compact h3{margin-bottom:8px}
+
+.journey-report-line{display:flex;align-items:center;gap:10px;margin:8px 0}.journey-report-line span:first-child{min-width:75px}.journey-report-line progress{flex:1;min-width:0;accent-color:#a78bfa}.journey-report-line button{margin-left:auto}.journey-card input,.journey-card select{max-width:100%}
