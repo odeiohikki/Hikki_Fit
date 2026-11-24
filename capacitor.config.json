@@ -1,6 +1,6 @@
 {
   "appId": "com.hikkistudio.fit.experimental",
-  "appName": "Hikki Fit 2.0 Beta 2",
+  "appName": "Hikki Fit",
   "webDir": "www",
   "android": {
     "adjustMarginsForEdgeToEdge": "force"
