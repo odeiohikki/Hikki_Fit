@@ -854,7 +854,7 @@ function finishWorkout() {
   const progress=calcularNivel();
   const summary=el("dialog");
   summary.append(el("h2","🎉 Treino concluído!"),el("p","Mais um passinho na sua jornada."),el("p","Duração: "+formatTime(record.durationSeconds)),el("p","Exercícios: "+record.exercises.length),el("p","Séries previstas: "+record.exercises.reduce((n,e)=>n+Number(e.sets||0),0)),el("p","XP recebido: +"+(progress.xpTotal-previousLevel.xpTotal)),el("p","Nível "+progress.nivel+" • "+progress.porcentagem+"% de progresso até o próximo nível"));
-  if(record.durationSeconds>recordDuration&&recordDuration>0)summary.append(el("p","🏆 Novo recorde de duração!"));
+  if(progress.nivel>previousLevel.nivel)summary.append(el("p","⭐ Você alcançou o nível "+progress.nivel+"!"));if(record.durationSeconds>recordDuration&&recordDuration>0)summary.append(el("p","🏆 Novo recorde de duração!"));const bar=el("progress");bar.max=progress.xpNecessario;bar.value=progress.xpRestante;bar.setAttribute("aria-label","Progresso até o próximo nível");summary.append(bar);
   summary.append(button("Voltar ao início","primary-btn",()=>summary.close()));summary.addEventListener("close",()=>summary.remove(),{once:true});document.body.append(summary);summary.showModal();
 }
 
@@ -1734,7 +1734,7 @@ function calcularNivel() {
 
   const xpNecessario = nivel * 100;
 
-  const porcentagem = Math.round(
+  const porcentagem = Math.floor(
     (xpRestante / xpNecessario) * 100
   );
 
