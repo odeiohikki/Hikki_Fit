@@ -708,7 +708,7 @@ function startWorkout(id) {
 
 let restDeadline=0, restInterval=0;
 function clearRest(){clearInterval(restInterval);restInterval=0;restDeadline=0;const b=$("restButton");if(b)b.textContent="Descansar • 30 s";}
-const restButton=el("button","Descansar • 30 s","secondary-btn wide");restButton.id="restButton";$("completeExercise").before(restButton);
+const restButton=el("button","Descansar • 30 s","secondary-btn wide");restButton.type="button";restButton.id="restButton";$("completeExercise").before(restButton);
 restButton.onclick=()=>{if(!session)return;if(restDeadline){clearRest();return;}restDeadline=Date.now()+30000;const tick=()=>{const n=Math.max(0,Math.ceil((restDeadline-Date.now())/1000));if(!n){clearRest();toast("Descanso concluído! 💜");return;}restButton.textContent="Descanso: "+n+" s • Pular";};tick();restInterval=setInterval(tick,250);};
 function renderTraining() {
   clearRest();
@@ -853,7 +853,7 @@ function finishWorkout() {
   showPage("home");
   const progress=calcularNivel();
   const summary=el("dialog");
-  summary.append(el("h2","🎉 Treino concluído!"),el("p","Mais um passinho na sua jornada."),el("p","Duração: "+formatTime(record.durationSeconds)),el("p","Exercícios: "+record.exercises.length),el("p","Séries previstas: "+record.exercises.reduce((n,e)=>n+Number(e.sets||0),0)),el("p","XP recebido: +"+(progress.xpTotal-previousLevel.xpTotal)),el("p","Nível "+progress.nivel+" • "+progress.porcentagem+"% para o próximo nível"));
+  summary.append(el("h2","🎉 Treino concluído!"),el("p","Mais um passinho na sua jornada."),el("p","Duração: "+formatTime(record.durationSeconds)),el("p","Exercícios: "+record.exercises.length),el("p","Séries previstas: "+record.exercises.reduce((n,e)=>n+Number(e.sets||0),0)),el("p","XP recebido: +"+(progress.xpTotal-previousLevel.xpTotal)),el("p","Nível "+progress.nivel+" • "+progress.porcentagem+"% de progresso até o próximo nível"));
   if(record.durationSeconds>recordDuration&&recordDuration>0)summary.append(el("p","🏆 Novo recorde de duração!"));
   summary.append(button("Voltar ao início","primary-btn",()=>summary.close()));summary.addEventListener("close",()=>summary.remove(),{once:true});document.body.append(summary);summary.showModal();
 }
@@ -1871,7 +1871,7 @@ finishWorkout = function () {
   finishWorkoutAnterior();
 
   if (treinoCompleto && !session) {
-    const xpGanho = 50 + quantidadeExercicios * 10;
+    const xpGanho = calcularXpTreino(history.at(-1));
 
     atualizarPerfilXp();
 
