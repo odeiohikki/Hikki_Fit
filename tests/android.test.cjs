@@ -57,3 +57,17 @@ test('mascote utiliza as cinco ilustrações conforme o nível',()=>{
  for(const [level,stage] of [[1,1],[4,1],[5,2],[9,2],[10,3],[19,3],[20,4],[34,4],[35,5],[100,5]])assert.equal(vm.runInNewContext(expression,{level}),stage);
  assert.match(src,/turtleStages\[Number\(turtle\.dataset\.stage\)-1\]/);
 });
+
+test('backup rejeita mídias repetidas e órfãs antes de escrever',()=>{
+ const vm=require('node:vm');
+ const src=fs.readFileSync('www/final.js','utf8');
+ const fn=src.match(/function validV2\(backup\)\{[\s\S]*?\n  \}/)[0];
+ const validate=vm.runInNewContext(fn+';validV2',{validateBackup:()=>true,validMediaUrl:()=>true});
+ const base={app:'Hikki Fit',version:2,data:{exercises:[{id:'a'},{id:'b'}]}};
+ const a={id:'a',kind:'link',url:'https://example.com/a',type:'image'};
+ assert.equal(validate({...base,media:[a]}),true);
+ assert.equal(validate({...base,media:[a,a]}),false);
+ assert.equal(validate({...base,media:[{...a,id:'missing'}]}),false);
+ assert.equal(validate({...base,media:[null]}),false);
+ assert.equal(validate({...base,media:[]}),true);
+});
