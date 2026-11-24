@@ -32,8 +32,14 @@ jobs:
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
           test -d "$ANDROID_HOME"
-          sdkmanager --version
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          if [ -d "$ANDROID_HOME/platforms/android-35" ] && [ -d "$ANDROID_HOME/build-tools/35.0.0" ]; then
+            echo "SDK 35 ja instalado"
+          else
+            SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | sort -V | tail -n 1)"
+            test -n "$SDKMANAGER"
+            "$SDKMANAGER" --version
+            "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+          fi
       - run: npm install --no-audit --no-fund
       - run: npm test
       - run: npx cap add android
