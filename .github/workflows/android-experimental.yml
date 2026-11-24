@@ -8,6 +8,7 @@ on:
       - 'native.js'
       - 'scripts/build-android.cjs'
       - 'tests/**'
+      - 'android-src/**'
       - '.github/workflows/android-experimental.yml'
       - '*.js'
       - '*.html'
@@ -43,6 +44,30 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm test
       - run: npx cap add android
+      - name: Integrar extensoes Android
+        run: |
+          DIR=android/app/src/main/java/com/hikkistudio/fit/experimental
+          cp android-src/HikkiBackup.java "$DIR/"
+          cat > "$DIR/MainActivity.java" <<'JAVA'
+          package com.hikkistudio.fit.experimental;
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+          public class MainActivity extends BridgeActivity {
+            @Override public void onCreate(Bundle state) {
+              registerPlugin(HikkiBackup.class);
+              super.onCreate(state);
+            }
+          }
+          JAVA
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("android/app/src/main/AndroidManifest.xml")
+          s=p.read_text()
+          for permission in ["android.permission.SCHEDULE_EXACT_ALARM","android.permission.RECEIVE_BOOT_COMPLETED"]:
+              if permission not in s:
+                  s=s.replace("</manifest>",f'<uses-permission android:name="{permission}" />\n</manifest>')
+          p.write_text(s)
+          PY
       - run: npx cap sync android
       - run: chmod +x android/gradlew && cd android && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
