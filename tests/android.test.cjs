@@ -71,3 +71,15 @@ test('backup rejeita mídias repetidas e órfãs antes de escrever',()=>{
  assert.equal(validate({...base,media:[null]}),false);
  assert.equal(validate({...base,media:[]}),true);
 });
+
+test('lembretes restaurados respeitam permissão e configuração anterior',async()=>{
+ const vm=require('node:vm');
+ const src=fs.readFileSync('native.js','utf8');
+ const fn=src.match(/async function reconcileReminders\(\)\{[\s\S]*?\n \}/)[0];
+ for(const [saved,enabled,permission,expected] of [['same',true,'granted',0],['old',true,'denied',0],['old',true,'granted',1],['old',false,'denied',1]]){
+  let calls=0;
+  const context={localStorage:{getItem:()=>saved},reminderSyncKey:'key',reminderSignature:()=>'same',reminders:{enabled},notifications:{checkPermissions:async()=>({display:permission})},syncStatus:{},reminderQueue:Promise.resolve(),syncReminders:async()=>{calls++;}};
+  await vm.runInNewContext(fn+';reconcileReminders()',context);
+  assert.equal(calls,expected);
+ }
+});
