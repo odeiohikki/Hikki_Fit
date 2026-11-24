@@ -66,7 +66,7 @@
  window.hikkiNativeExport=async (value,share=false)=>{
  const name='hikki-fit-backup-v2-'+new Date().toISOString().slice(0,10)+'.json';
  const file=await plugins.Filesystem.writeFile({path:name,data:JSON.stringify(value),directory:'CACHE',encoding:'utf8'});
- if(!share){const result=await plugins.HikkiBackup.save({uri:file.uri,name});if(result?.saved===true){localStorage.setItem('hikki_last_backup',String(Date.now()));checkBackup();}return result;}
+ if(!share){const result=await plugins.HikkiBackup.save({uri:file.uri,name});localStorage.setItem('hikki_last_backup',String(Date.now()));checkBackup();return result;}
  await plugins.Share.share({title:'Backup Hikki Fit',files:[file.uri],dialogTitle:'Salvar backup'});
  };
 })();
