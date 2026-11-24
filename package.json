@@ -1,0 +1,19 @@
+{
+  "name": "hikki-fit-experimental",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-android.cjs",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "dependencies": {
+    "@capacitor/core": "7.4.3",
+    "@capacitor/android": "7.4.3",
+    "@capacitor/local-notifications": "7.0.3",
+    "@capacitor/filesystem": "7.1.4",
+    "@capacitor/share": "7.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "7.4.3"
+  }
+}
