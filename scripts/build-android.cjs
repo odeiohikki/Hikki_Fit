@@ -25,3 +25,8 @@ fs.writeFileSync(path.join(out,'final.js'),final);
 
 final=final.replace('version:2,media};','version:2,media,journey:window.hikkiJourney?.export()};').replace('let previousMedia=null;','if(window.hikkiJourney)previous[window.hikkiJourney.key]=localStorage.getItem(window.hikkiJourney.key);\n    let previousMedia=null;').replace('localStorage.removeItem(KEYS.reminderDismissed);','if(window.hikkiJourney && backup.journey) localStorage.setItem(window.hikkiJourney.key,JSON.stringify(window.hikkiJourney.normalize(backup.journey)));\n      localStorage.removeItem(KEYS.reminderDismissed);').replace('keys.forEach(k=>{try{previous[k]','Object.keys(previous).forEach(k=>{try{previous[k]');
 fs.writeFileSync(path.join(out,'final.js'),final);
+
+ // Fail the build if a source change silently breaks an Android adaptation.
+ for(const required of ['journey:window.hikkiJourney?.export()', 'window.hikkiJourney.normalize(backup.journey)', 'if(mediaChanged&&previousMedia!==null)', 'window.hikkiNativeExport(value, share)', 'exportBackup(true)', 'Object.keys(previous).forEach', 'new Set(backup.media.map(m=>m?.id))']){
+   if(!final.includes(required))throw Error('Adaptação Android ausente: '+required);
+ }
