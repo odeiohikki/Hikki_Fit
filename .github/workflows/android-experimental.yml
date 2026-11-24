@@ -1,7 +1,7 @@
-name: Hikki Fit Android Experimental
+name: Hikki Fit 2.0 Beta
 on:
   push:
-    branches: [hikki-fit-capacitor-test]
+    branches: [hikki-fit-v2-beta]
     paths:
       - 'package.json'
       - 'capacitor.config.json'
@@ -72,6 +72,6 @@ jobs:
       - run: chmod +x android/gradlew && cd android && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: hikki-fit-experimental-apk
+          name: hikki-fit-v2-beta-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
