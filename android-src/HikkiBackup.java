@@ -9,6 +9,14 @@ import java.io.*;
 
 @CapacitorPlugin(name="HikkiBackup")
 public class HikkiBackup extends Plugin {
+ @PluginMethod public void setAwake(PluginCall call) {
+  boolean enabled=Boolean.TRUE.equals(call.getBoolean("enabled",false));
+  getActivity().runOnUiThread(()->{
+   if(enabled)getActivity().getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+   else getActivity().getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+   call.resolve();
+  });
+ }
  @PluginMethod public void save(PluginCall call) {
   String name=call.getString("name");
   if(name==null || call.getString("uri")==null){call.reject("Arquivo inválido");return;}
