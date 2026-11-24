@@ -80,10 +80,11 @@ jobs:
           import cairosvg, re, os
           from PIL import Image
           launcher=Path('hikki-launcher.png')
-          image=Image.open(launcher).convert('RGBA') if launcher.exists() else None
+          assert launcher.is_file(), 'PNG oficial ausente'
+          image=Image.open(launcher).convert('RGBA')
           if image is not None:
               assert image.width==image.height, 'Icone precisa ser quadrado'
-              assert image.getpixel((0,0))[3]==0, 'Icone precisa ter cantos transparentes'
+              assert all(image.getpixel(pt)[3]==0 for pt in [(0,0),(image.width-1,0),(0,image.height-1),(image.width-1,image.height-1)]), 'Icone precisa ter quatro cantos transparentes'
           else:
               print('::warning::Icone oficial ainda ausente; usando icon.svg')
           res=Path("android/app/src/main/res")
@@ -121,7 +122,8 @@ jobs:
           TOOLS="$ANDROID_HOME/build-tools/35.0.0"
           "$TOOLS/zipalign" -f -p 4 android/app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/hikki-aligned.apk"
           "$TOOLS/apksigner" sign --ks "$KEY" --ks-type PKCS12 --ks-key-alias hikki --ks-pass env:HIKKI_KEYSTORE_PASSWORD --key-pass env:HIKKI_KEYSTORE_PASSWORD --out Hikki-Fit.apk "$RUNNER_TEMP/hikki-aligned.apk"
-          "$TOOLS/apksigner" verify --verbose --print-certs Hikki-Fit.apk
+          "$TOOLS/apksigner" verify --verbose --print-certs Hikki-Fit.apk | tee "$RUNNER_TEMP/hikki-cert.txt"
+          grep -iF '0f00e9139eab89cce28c08b28e5ed826e4b57aebd3199518e03a34028c8c4e71' "$RUNNER_TEMP/hikki-cert.txt"
       - uses: actions/upload-artifact@v4
         with:
           name: hikki-fit-definitive-${{ github.run_number }}
