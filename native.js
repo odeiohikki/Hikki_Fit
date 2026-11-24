@@ -8,12 +8,14 @@
  const panel=document.createElement('section');panel.className='card';
  const heading=document.createElement('h3');heading.textContent='🔔 Notificações nativas — teste';panel.append(heading);
  const status=document.createElement('p');status.className='muted';status.setAttribute('role','status');status.textContent='Teste local, sem Firebase. Agende e feche normalmente o aplicativo.';panel.append(status);
+ const channelId='hikki_reminders_high_v1';
+ async function ensureChannel(){await notifications.createChannel({id:channelId,name:'Lembretes de treino',description:'Lembretes e testes do Hikki Fit',importance:4,visibility:1,vibration:true});}
  const ids=[91001,91002,91003,91004];
  const log=(message)=>{try{const entries=JSON.parse(localStorage.getItem('hikki_native_log')||'[]');entries.push(new Date().toISOString()+' '+message);localStorage.setItem('hikki_native_log',JSON.stringify(entries.slice(-30)));}catch{}};
  notifications.addListener('localNotificationReceived',n=>log('Recebida '+n.id));
  async function permission(){let p=await notifications.checkPermissions();if(p.display!=='granted')p=await notifications.requestPermissions();if(p.display!=='granted')throw Error('Permissão não concedida');}
  function button(label,action){const b=document.createElement('button');b.className='secondary-btn wide';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{status.textContent=await action();}catch(e){status.textContent='Falha: '+e.message;}finally{b.disabled=false;}};panel.append(b);}
- async function schedule(delay,id){await permission();await notifications.cancel({notifications:[{id}]});await notifications.schedule({notifications:[{id,title:'Hikki Fit 💜',body:'🐢 Lembrete local experimental',schedule:{at:new Date(Date.now()+delay),allowWhileIdle:true}}]});log('Agendado '+id+' para '+new Date(Date.now()+delay).toISOString());return 'Teste agendado. O Android pode atrasar a entrega.';}
+ async function schedule(delay,id){await permission();await ensureChannel();await notifications.cancel({notifications:[{id}]});await notifications.schedule({notifications:[{id,channelId,title:'Hikki Fit 💜',body:'🐢 Lembrete local experimental',schedule:{at:new Date(Date.now()+delay),allowWhileIdle:true}}]});log('Agendado '+id+' para '+new Date(Date.now()+delay).toISOString());return 'Teste agendado. O Android pode atrasar a entrega.';}
  button('Solicitar permissão',async()=>{await permission();return 'Permissão concedida.';});
  button('Testar notificação agora',()=>schedule(2000,ids[0]));
  button('Agendar teste em 1 minuto',()=>schedule(60000,ids[1]));
@@ -46,8 +48,9 @@
   await notifications.cancel({notifications:reminderIds.map(id=>({id}))});
   if(!reminders.enabled)return;
   await permission();
+  await ensureChannel();
   const [hour,minute]=reminders.time.split(':').map(Number);
-  const list=reminders.days.map(day=>({id:92000+Number(day),title:'Hikki Fit 💜',body:'🐢 Seu treino, seu ritmo.',schedule:{on:{weekday:Number(day)+1,hour,minute},allowWhileIdle:true}}));
+  const list=reminders.days.map(day=>({id:92000+Number(day),channelId,title:'Hikki Fit 💜',body:'🐢 Seu treino, seu ritmo.',schedule:{on:{weekday:Number(day)+1,hour,minute},allowWhileIdle:true}}));
   if(list.length)await notifications.schedule({notifications:list});
  }
  document.getElementById('saveReminder').addEventListener('click',()=>{setTimeout(()=>syncReminders().then(()=>{syncStatus.textContent='Lembretes nativos atualizados.';}).catch(e=>{syncStatus.textContent='Falha ao sincronizar: '+e.message;}),0);});
